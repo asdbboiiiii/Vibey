@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STELLARIS • Deep Space Network</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: radial-gradient(circle at center, #0a0f2b 0%, #000000 100%);
+      color: #00eaff;
+      font-family: 'Roboto Mono', monospace;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 0 6px #fff;
+      animation: twinkle 4s infinite alternate;
+    }
+    @keyframes twinkle { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+
+    .nebula {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 30% 40%, rgba(100,60,255,0.18), transparent 60%);
+      animation: nebula-shift 120s linear infinite;
+      z-index: 0;
+    }
+    @keyframes nebula-shift { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    nav {
+      position: fixed;
+      top: 0; width: 100%;
+      background: rgba(5,10,30,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,234,255,0.3);
+      z-index: 100;
+      padding: 15px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 5px;
+      text-shadow: 0 0 20px #00eaff;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: #00eaff;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      background: rgba(0,234,255,0.2);
+      box-shadow: 0 0 15px #00eaff;
+    }
+
+    .content {
+      margin-top: 90px;
+      padding: 40px;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Modules on Home - SLIDE UP FROM BOTTOM */
+    .modules-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin: 60px 0;
+      opacity: 0;
+      transform: translateY(100px);
+      animation: slideUpFromBottom 1.2s ease-out forwards;
+    }
+
+    @keyframes slideUpFromBottom {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .module-section {
+      background: #0a1428;
+      border: 2px solid #00d4ff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.25);
+    }
+
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.35rem;
+      padding: 18px 25px;
+      background: #0a1f3d;
+      color: #00eaff;
+      text-align: center;
+      border-bottom: 1px solid #00d4ff;
+    }
+
+    .dropdown-header {
+      padding: 18px 25px;
+      background: #0a1f3d;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #00eaff;
+      transition: all 0.3s;
+    }
+
+    .dropdown-header:hover {
+      background: #112b4f;
+    }
+
+    .arrow {
+      transition: transform 0.4s;
+      font-size: 1.3rem;
+    }
+
+    .dropdown-content {
+      display: none;
+      padding: 20px;
+      background: #0a1428;
+      border-top: 1px solid #00d4ff;
+    }
+
+    .dropdown-content.show {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .module-btn {
+      padding: 14px 18px;
+      background: #0a1f3d;
+      color: #00eaff;
+      border: 2px solid #00d4ff;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14.5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: left;
+    }
+
+    .module-btn:hover {
+      background: #112b4f;
+      border-color: #00ffff;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .hero { text-align: center; padding: 80px 20px 60px; }
+    .hero h1 { 
+      font-family: 'Orbitron', sans-serif; 
+      font-size: 4rem; 
+      margin-bottom: 20px; 
+      text-shadow: 0 0 40px #00eaff; 
+    }
+
+    /* UPDATES TAB - Clean live feed */
+    .updates-container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .updates-header {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.8rem;
+      text-align: center;
+      margin-bottom: 40px;
+      color: #00eaff;
+      text-shadow: 0 0 30px #00eaff;
+    }
+
+    .update-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .update-card {
+      background: #0a1428;
+      border: 2px solid #00d4ff;
+      border-radius: 12px;
+      padding: 22px;
+      display: flex;
+      gap: 20px;
+      transition: all 0.3s;
+    }
+
+    .update-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 0 35px rgba(0, 212, 255, 0.4);
+    }
+
+    .update-time {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      color: #00ffff;
+      min-width: 110px;
+      text-align: right;
+      padding-top: 4px;
+    }
+
+    .update-content h3 {
+      font-family: 'Orbitron', sans-serif;
+      color: #00eaff;
+      margin-bottom: 6px;
+    }
+
+    .update-content p {
+      opacity: 0.95;
+      line-height: 1.5;
+    }
+
+    /* GAME IFRAME */
+    #telemetry {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .game-header h1 {
+      text-align: center;
+      flex: 1;
+    }
+
+    .fullscreen-btn {
+      padding: 12px 20px;
+      background: #0a1f3d;
+      color: #00eaff;
+      border: 2px solid #00d4ff;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .fullscreen-btn:hover {
+      background: #112b4f;
+      border-color: #00ffff;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+    }
+
+    #gameFrame {
+      flex: 1;
+      border: 2px solid #00d4ff;
+      border-radius: 12px;
+      background: #0a1428;
+      width: 100%;
+      min-height: 800px;
+    }
+
+    /* Fullscreen container */
+    #fullscreenContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 9998;
+      display: none;
+    }
+
+    #fullscreenContainer.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #fullscreenFrame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .exit-fullscreen-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 16px;
+      background: #0a1f3d;
+      color: #00eaff;
+      border: 2px solid #00d4ff;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 10000;
+      display: none;
+      transition: all 0.3s;
+    }
+
+    .exit-fullscreen-btn.active {
+      display: block;
+    }
+
+    .exit-fullscreen-btn:hover {
+      background: #112b4f;
+      border-color: #00ffff;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+    }
+
+    /* PROXY TAB STYLES */
+    #exploration {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    #exploration h1 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .proxy-container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(10, 10, 30, 0.92);
+      border: 6px solid #00ffcc;
+      box-shadow: 0 0 50px #00ffcc, 0 0 100px #8a2be2;
+      padding: 40px;
+      border-radius: 12px;
+    }
+
+    .proxy-input {
+      width: 100%;
+      padding: 18px;
+      font-size: 1.1rem;
+      background: rgba(0, 0, 0, 0.7);
+      border: 4px solid #00ffcc;
+      color: #00ffcc;
+      margin-bottom: 25px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px #00ffcc;
+      font-family: 'Roboto Mono', monospace;
+      text-align: center;
+    }
+
+    .proxy-btn {
+      padding: 18px 50px;
+      font-size: 1.2rem;
+      background: linear-gradient(#00ffcc, #8a2be2);
+      color: #000;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 40px #00ffcc, 0 0 70px #8a2be2;
+      transition: all 0.3s;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      width: 100%;
+    }
+
+    .proxy-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 60px #ff00cc;
+    }
+
+    .proxy-status {
+      margin-top: 30px;
+      font-size: 1rem;
+      min-height: 70px;
+      line-height: 1.5;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 15px;
+      border: 2px dashed #00ffcc;
+      box-shadow: 0 0 20px #00ffcc;
+      color: #00ffcc;
+    }
+
+    .proxy-info {
+      margin: 20px 0;
+      padding: 15px;
+      background: rgba(138, 43, 226, 0.2);
+      border: 3px dashed #00ffcc;
+      font-size: 0.9rem;
+      color: #00ffcc;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">VibeHub</div>
+    <ul class="nav-links">
+      <li><a href="#" class="active" onclick="showSection('home'); return false;">MISSION HUB</a></li>
+      <li><a href="#" onclick="showSection('updates'); return false;">UPDATES</a></li>
+      <li><a href="#" onclick="showSection('telemetry'); return false;">GEOMETRY DASH!</a></li>
+      <li><a href="#" onclick="showSection('exploration'); return false;">Proxy (very early beta)</a></li>
+    </ul>
+    <div style="color:#00ff9d;">yo hello</div>
+  </nav>
+
+  <div class="stars" id="stars"></div>
+  <div class="nebula"></div>
+
+  <!-- HOME SECTION - 4 dropdowns (multiple can be open) -->
+  <div id="home" class="content">
+    <div class="hero">
+      <h1>VIBEHUB (remake)</h1>
+      <p>Games for FREE TIME! pr0xies and others FOR FREE TIME!
+    </div>
+
+    <div class="modules-row">
+      <!-- Game Hubs -->
+      <div class="module-section">
+        <div class="section-title">Game Hubs (none mine)</div>
+        <div class="dropdown-header" onclick="toggleDropdown(this)">
+          <span>Games inside Hubs (like stash)</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="dropdown-content">
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 1</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 2</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 3</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 4</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 5</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 6</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 7</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 8</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 9</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 10</button>
+        </div>
+      </div>
+
+      <!-- Games (Multiple) -->
+      <div class="module-section">
+        <div class="section-title">Games (multiple per site)</div>
+        <div class="dropdown-header" onclick="toggleDropdown(this)">
+          <span>Games (ALOT)</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="dropdown-content">
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 1</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 2</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 3</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 4</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 5</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 6</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 7</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 8</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 9</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 10</button>
+        </div>
+      </div>
+
+      <!-- Single Games -->
+      <div class="module-section">
+        <div class="section-title">Single Games</div>
+        <div class="dropdown-header" onclick="toggleDropdown(this)">
+          <span>geometry dash, ripoff games, and ect</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="dropdown-content">
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 1</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 2</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 3</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 4</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 5</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 6</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 7</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 8</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 9</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 10</button>
+        </div>
+      </div>
+
+      <!-- Other Stuff and Apps -->
+      <div class="module-section">
+        <div class="section-title">Other stuff and APPS</div>
+        <div class="dropdown-header" onclick="toggleDropdown(this)">
+          <span>yay other stuff</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="dropdown-content">
+          <button class="module-btn" onclick="openLink('https://www.vibehubfun.space/soundboard')">Sound board</button>
+          <button class="module-btn" onclick="openLink('https://www.vibehubfun.space/tiktok')">Tiktok</button>
+          <button class="module-btn" onclick="openLink('https://www.vibehubfun.space/water-clicker-by-ck')">Water CLicker By KC</button>
+          <button class="module-btn" onclick="openLink('https://www.vibehubfun.space/forming')">Game Form</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 5</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 6</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 7</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 8</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 9</button>
+          <button class="module-btn" onclick="openLink('https://example.com')">BLANK 10</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPDATES TAB -->
+  <div id="updates" class="content" style="display:none;">
+    <div class="updates-container">
+      <h1 class="updates-header">LIVE UPDATES</h1>
+      <div class="update-feed">
+        <div class="update-card">
+          <div class="update-time">April 17-19</div>
+          <div class="update-content">
+            <h3>Update 1.31 (Upcoming)</h3>
+            <p>Adding more games...</p>
+          </div>
+        </div>
+        <div class="update-card">
+          <div class="update-time">April 16</div>
+          <div class="update-content">
+            <h3>Update 1.303</h3>
+            <p>Added messages to updates</p>
+          </div>
+        </div>
+        <div class="update-card">
+          <div class="update-time">April 16</div>
+          <div class="update-content">
+            <h3>Update 1.302</h3>
+            <p>Added geometry dash tab.</p>
+          </div>
+        </div>
+        <div class="update-card">
+          <div class="update-time">April 16</div>
+          <div class="update-content">
+            <h3>1.301</h3>
+            <p>Added sections</p>
+          </div>
+        </div>
+        <div class="update-card">
+          <div class="update-time">April 16</div>
+          <div class="update-content">
+            <h3>Update 13.00</h3>
+            <p>Whole New UI and Design</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME TAB - Embedded in HTML -->
+  <div id="telemetry" class="content" style="display:none;">
+    <div class="game-header">
+      <h1 style="flex: 1;">GEOMETRY DASH</h1>
+      <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ FULLSCREEN</button>
+    </div>
+    <iframe id="gameFrame" src="https://soappppppppppppppppy.github.io/dash/" frameborder="0" allowfullscreen></iframe>
+  </div>
+
+  <!-- Fullscreen container with separate iframe -->
+  <div id="fullscreenContainer">
+    <iframe id="fullscreenFrame" src="https://soappppppppppppppppy.github.io/dash/"></iframe>
+  </div>
+
+  <!-- Exit fullscreen button -->
+  <button class="exit-fullscreen-btn" id="exitFullscreenBtn" onclick="toggleFullscreen()">✕ EXIT FULLSCREEN</button>
+
+  <!-- PROXY TAB -->
+  <div id="exploration" class="content" style="display:none;">
+    <h1 style="text-align:center; margin-top:0; color:#00ffcc; text-shadow: 0 0 20px #8a2be2;">Basic Website Bypass (RETRY IF IT DOSENT WORK!)</h1>
+    
+    <div class="proxy-container">
+      <p style="margin-bottom: 15px; font-size: 1rem; color:#00ffcc; text-shadow: 0 0 20px #8a2be2;">Website must be allowed to show on Iframes to proceed</p>
+      
+      <div class="proxy-info">
+        Easy to work bypass<br>
+        (Securly sees (not leaking method) and skips filtering)
+      </div>
+      
+      <input type="text" class="proxy-input" id="urlInput" placeholder="https://your-website.com" value="https://discord.com">
+      
+      <button class="proxy-btn" onclick="launchSpaceBypass()">Load Website</button>
+      
+      <div class="proxy-status" id="status">Website Loader, proxy, what ever you wanna call it, you can load up single page websites and play them or whatever if its blocks this can unblock it if it allows Iframes, not all websites like, roblox, fortnite website, minecraft.net, discord.net, all dont allow Iframes so they cant be seen</div>
+    </div>
+  </div>
+
+  <script>
+    // Stars background
+    function createStars() {
+      const container = document.getElementById('stars');
+      for (let i = 0; i < 400; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 3 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.animationDelay = `-${Math.random() * 5}s`;
+        container.appendChild(star);
+      }
+    }
+
+    // Open link in new tab
+    function openLink(url) {
+      window.open(url, '_blank');
+    }
+
+    // Multiple dropdowns can stay open at the same time
+    function toggleDropdown(header) {
+      const content = header.nextElementSibling;
+      const arrow = header.querySelector('.arrow');
+      content.classList.toggle('show');
+      arrow.textContent = content.classList.contains('show') ? '▲' : '▼';
+    }
+
+    // Toggle fullscreen
+    function toggleFullscreen() {
+      const container = document.getElementById('fullscreenContainer');
+      const exitBtn = document.getElementById('exitFullscreenBtn');
+
+      container.classList.toggle('active');
+      exitBtn.classList.toggle('active');
+
+      if (container.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+    // Launch Space Bypass
+    function launchSpaceBypass() {
+      let input = document.getElementById('urlInput').value.trim();
+      if (!input) {
+        showProxyStatus("❌ ENTER YOUR WEBSITE URL FIRST!", "#ff00cc");
+        return;
+      }
+
+      let target = input;
+      if (!target.startsWith('http://') && !target.startsWith('https://')) {
+        target = 'https://' + target;
+      }
+
+      // HASH TRICK (this is what makes it work)
+      const hashTrickUrl = target + (target.includes('#') ? '&' : '#') + 'translate.google.com';
+
+      const bypassWindow = window.open('about:blank', '_blank');
+      
+      if (!bypassWindow) {
+        showProxyStatus("❌ Pop-up blocked! Allow pop-ups then try again.", "#ff00cc");
+        return;
+      }
+
+      // SPACE-THEMED injected window
+      bypassWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>about:blank</title>
+          <style>
+            * { margin:0; padding:0; box-sizing:border-box; }
+            body, html { height:100%; background:#000; overflow:hidden; font-family:system-ui; position:relative; }
+            
+            body::before {
+              content: '';
+              position: absolute;
+              top: 0; left: 0; right: 0; bottom: 0;
+              background: radial-gradient(circle at 25% 25%, #ffffff 1px, transparent 0),
+                          radial-gradient(circle at 75% 35%, #ffffff 1px, transparent 0),
+                          radial-gradient(circle at 40% 80%, #ffffff 1px, transparent 0);
+              background-size: 180px 180px, 220px 220px, 150px 150px;
+              animation: stars 60s linear infinite;
+              opacity: 0.2;
+              z-index: -1;
+            }
+            
+            .top-bar {
+              background: rgba(10,10,30,0.95);
+              color: #00ffcc;
+              padding: 12px 15px;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              font-size: 14px;
+              border-bottom: 4px solid #00ffcc;
+              box-shadow: 0 0 20px #00ffcc;
+              z-index: 10;
+              position: relative;
+            }
+            .url-bar {
+              flex: 1;
+              background: #111;
+              color: #00ffcc;
+              padding: 8px 14px;
+              border-radius: 6px;
+              font-family: monospace;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              box-shadow: 0 0 15px #00ffcc;
+            }
+            .input-bar {
+              flex: 1;
+              background: #111;
+              color: #00ffcc;
+              border: 2px solid #00ffcc;
+              padding: 6px 12px;
+              border-radius: 6px;
+              font-family: monospace;
+              font-size: 13px;
+            }
+            iframe {
+              width: 100%;
+              height: calc(100vh - 56px);
+              border: none;
+              background: #000;
+            }
+            .fake-btn {
+              background: linear-gradient(#00ffcc, #8a2be2);
+              color: #000;
+              border: none;
+              padding: 6px 16px;
+              font-size: 12px;
+              cursor: pointer;
+              border-radius: 4px;
+              box-shadow: 0 0 15px #00ffcc;
+            }
+            .fake-btn:hover {
+              transform: scale(1.05);
+            }
+          </style>
+        </head>
+        <body>
+          <div class="top-bar">
+            <span style="font-size:24px;"></span>
+            <div class="url-bar" id="fakeUrl">working</div>
+            
+            <input id="newUrlInput" class="input-bar" placeholder="new-site.com" value="${target}">
+            <button class="fake-btn" onclick="switchSite()">SWITCH</button>
+            
+            <button class="fake-btn" onclick="document.documentElement.requestFullscreen()">FULLSCREEN</button>
+          </div>
+          <iframe id="iframe" src="${hashTrickUrl}" allowfullscreen></iframe>
+
+          <script>
+            function switchSite() {
+              let newInput = document.getElementById('newUrlInput').value.trim();
+              if (!newInput) return;
+              
+              let newUrl = newInput;
+              if (!newUrl.startsWith('http://') && !newUrl.startsWith('https://')) {
+                newUrl = 'https://' + newUrl;
+              }
+              
+              const hashTrick = newUrl + (newUrl.includes('#') ? '&' : '#') + 'translate.google.com';
+              document.getElementById('iframe').src = hashTrick;
+              document.getElementById('fakeUrl').textContent = newUrl.replace(/^https?:\\/\\//, '');
+            }
+            
+            document.getElementById('newUrlInput').addEventListener('keypress', function(e) {
+              if (e.key === 'Enter') switchSite();
+            });
+            
+            setInterval(() => {
+              const bar = document.getElementById('fakeUrl');
+              const frame = document.getElementById('iframe');
+              if (bar && frame && frame.src) {
+                bar.textContent = frame.src.replace(/^https?:\\/\\//, '').split('#')[0];
+              }
+            }, 1200);
+          <\/script>
+        </body>
+        </html>
+      `);
+      bypassWindow.document.close();
+
+      showProxyStatus("✅ Launched Website should be unblocked", "#00ffcc");
+    }
+
+    function showProxyStatus(message, color) {
+      const el = document.getElementById('status');
+      el.style.color = color;
+      el.innerHTML = message;
+    }
+
+    // Enter key on proxy input
+    document.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && document.getElementById('urlInput') === document.activeElement) {
+        launchSpaceBypass();
+      }
+    });
+
+    // Tab switching
+    function showSection(section) {
+      document.querySelectorAll('.content').forEach(el => el.style.display = 'none');
+      document.getElementById(section).style.display = 'block';
+
+      document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active'));
+      const activeLink = Array.from(document.querySelectorAll('.nav-links a'))
+        .find(a => a.getAttribute('onclick').includes(section));
+      if (activeLink) activeLink.classList.add('active');
+    }
+
+    // Initialize
+    window.onload = () => {
+      createStars();
+      showSection('home');
+    };
+  </script>
+</body>
+</html>
