@@ -1,1 +1,79 @@
-&lt;a href="https://soapysalt5.github.io/bruh/embed/apps/tiktok/index.html"&gt;Click here&lt;/a&gt;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        .header {
+            background: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .url-bar {
+            padding: 10px;
+            background: #f0f0f0;
+            text-align: center;
+        }
+        
+        input {
+            padding: 8px;
+            width: 60%;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 8px 20px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        iframe {
+            width: 100%;
+            height: calc(100vh - 120px);
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Website Viewer</h1>
+        <p>Embed any website below</p>
+    </div>
+    
+    <div class="url-bar">
+        <input type="text" id="urlInput" placeholder="Enter website URL (https://soapysalt5.github.io/bruh/embed/apps/tiktok/index.html)" value="https://soapysalt5.github.io/bruh/embed/apps/tiktok/index.html">
+        <button onclick="loadWebsite()">Load Website</button>
+    </div>
+    
+    <iframe id="websiteFrame" src="https://soapysalt5.github.io/bruh/embed/apps/tiktok/index.html"></iframe>
+    
+    <script>
+        function loadWebsite() {
+            let url = document.getElementById('urlInput').value;
+            
+            // Add https:// if no protocol is specified
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+            
+            document.getElementById('websiteFrame').src = url;
+        }
+    </script>
+</body>
+</html>
